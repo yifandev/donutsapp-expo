@@ -1,0 +1,98 @@
+export const promoImages = [
+  {
+    id: "1",
+    image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93",
+    title: "Special Weekend Offer",
+    subtitle: "Get 50% off on all desserts",
+  },
+  {
+    id: "2",
+    image: "https://images.unsplash.com/photo-1511920170033-f8396924c348",
+    title: "Buy 1 Get 1 Free",
+    subtitle: "Limited time only",
+  },
+  {
+    id: "3",
+    image: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e",
+    title: "New Menu Launch",
+    subtitle: "Try our seasonal specials",
+  },
+  {
+    id: "4",
+    image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587",
+    title: "Free Delivery",
+    subtitle: "On orders above Rp 50.000",
+  },
+];
+
+export const categories = [
+  { id: "1", title: "Donuts", icon: "🍩", color: "bg-pink-100" },
+  { id: "2", title: "Coffee", icon: "☕", color: "bg-amber-100" },
+  { id: "3", title: "Ice Cream", icon: "🍨", color: "bg-blue-100" },
+  { id: "4", title: "Drinks", icon: "🥤", color: "bg-green-100" },
+  { id: "5", title: "Cakes", icon: "🍰", color: "bg-purple-100" },
+  { id: "6", title: "Pastry", icon: "🥐", color: "bg-yellow-100" },
+  { id: "7", title: "Snacks", icon: "🍪", color: "bg-orange-100" },
+  { id: "8", title: "Special", icon: "⭐", color: "bg-red-100" },
+];
+
+export const recommended = [
+  {
+    id: "1",
+    title: "Donut Tart Supreme",
+    price: "Rp 25.000",
+    originalPrice: "Rp 35.000",
+    image: "https://images.unsplash.com/photo-1603079841831-4cfe1f7a7b74",
+    promo: true,
+    rating: 4.8,
+    category: "Donuts",
+  },
+  {
+    id: "2",
+    title: "Chocolate Donut Deluxe",
+    price: "Rp 18.000",
+    originalPrice: "Rp 22.000",
+    image: "https://images.unsplash.com/photo-1551024601-bec78aea704b",
+    promo: true,
+    rating: 4.5,
+    category: "Donuts",
+  },
+  {
+    id: "3",
+    title: "Vanilla Ice Cream",
+    price: "Rp 15.000",
+    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
+    promo: false,
+    rating: 4.7,
+    category: "Ice Cream",
+  },
+  {
+    id: "4",
+    title: "Caramel Macchiato",
+    price: "Rp 28.000",
+    originalPrice: "Rp 35.000",
+    image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574",
+    promo: true,
+    rating: 4.9,
+    category: "Coffee",
+  },
+  {
+    id: "5",
+    title: "Strawberry Smoothie",
+    price: "Rp 22.000",
+    image: "https://images.unsplash.com/photo-1505252585461-04db1eb84625",
+    promo: false,
+    rating: 4.6,
+    category: "Drinks",
+  },
+  {
+    id: "6",
+    title: "Cheesecake Slice",
+    price: "Rp 32.000",
+    originalPrice: "Rp 40.000",
+    image: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e",
+    promo: true,
+    rating: 4.9,
+    category: "Cakes",
+  },
+];
