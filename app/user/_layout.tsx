@@ -8,7 +8,10 @@ export default function Layout() {
       <StatusBar style="inverted" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(main)" />
-        <Stack.Screen name="(stack)/locations" />
+        <Stack.Screen
+          name="(stack)/locations"
+          options={{ animation: "slide_from_right" }}
+        />
         <Stack.Screen
           name="(stack)/edit-profile"
           options={{ animation: "slide_from_right" }}

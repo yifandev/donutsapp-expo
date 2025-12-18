@@ -35,7 +35,7 @@ model Location {
   latitude    Float
   longitude   Float
   isDefault   Boolean  @default(false)
-  label       String?  // e.g., "Home", "Office", "Other"
+  label       String?  @default("Default")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

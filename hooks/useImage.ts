@@ -1,4 +1,3 @@
-import * as ImagePicker from "expo-image-picker";
 import { useCallback, useState } from "react";
 import { Platform } from "react-native";
 
@@ -94,6 +93,12 @@ export default function useImage(
 
   const pickFromGallery = useCallback(async () => {
     try {
+      // Lazy-load expo-image-picker to avoid requiring native module at module
+      // evaluation time (expo-router loads route files eagerly). This prevents
+      // metro/SSR from trying to resolve native modules when not running on
+      // a native runtime (dev server, web, or EAS build step).
+      const ImagePicker: any = await import("expo-image-picker");
+
       const permission =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted)
@@ -122,6 +127,9 @@ export default function useImage(
 
   const takePhoto = useCallback(async () => {
     try {
+      // Lazy-load expo-image-picker when camera is needed.
+      const ImagePicker: any = await import("expo-image-picker");
+
       const permission = await ImagePicker.requestCameraPermissionsAsync();
       if (!permission.granted)
         throw new Error("Permission to access camera denied");

@@ -155,7 +155,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50 ">
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -191,7 +191,7 @@ export default function ProfileScreen() {
             subtitle="Ubah nama dan foto profil"
             onPress={() => router.push("/user/edit-profile")}
           />
-          <View className="h-px bg-gray-100 ml-16" />
+          <View className="h-px bg-gray-100 ml-16 " />
           <ProfileMenuItem
             icon="mail-outline"
             title="Email"

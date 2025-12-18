@@ -145,17 +145,6 @@ export default function EditProfileModal() {
     );
   };
 
-  const handleResetChanges = () => {
-    setName(user?.name || "");
-    setPhoneNumber(user?.phoneNumber || "");
-    // Reset image ke nilai awal dari user
-    if (user?.image) {
-      setImageHook(user.image);
-    } else {
-      deleteImageHook();
-    }
-  };
-
   // Tampilkan loading saat mengupload gambar atau initial loading
   const isLoading = initialLoading || loading || imageUploading;
 
@@ -310,17 +299,6 @@ export default function EditProfileModal() {
                 <Ionicons name="trash-outline" size={20} color="#EF4444" />
                 <Text className="text-red-600 font-medium ml-2">
                   Hapus Foto Profil
-                </Text>
-              </Pressable>
-
-              <Pressable
-                className="flex-row items-center justify-center py-3 bg-gray-50 rounded-xl active:opacity-80 mb-10 mt-2"
-                onPress={handleResetChanges}
-                disabled={isLoading}
-              >
-                <Ionicons name="refresh-outline" size={20} color="#6B7280" />
-                <Text className="text-gray-700 font-medium ml-2">
-                  Reset Perubahan
                 </Text>
               </Pressable>
             </View>

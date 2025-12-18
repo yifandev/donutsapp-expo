@@ -103,7 +103,7 @@ export default function VerifyEmail() {
           type: "error",
           text1: "Gagal mengirim ulang OTP",
           text2: result.error.message,
-          visibilityTime: 4000,
+
           autoHide: true,
         });
         return;
@@ -114,7 +114,7 @@ export default function VerifyEmail() {
       Toast.show({
         type: "success",
         text1: "OTP baru telah dikirim",
-        visibilityTime: 4000,
+
         autoHide: true,
       });
     } catch (error: any) {
@@ -122,7 +122,7 @@ export default function VerifyEmail() {
         type: "error",
         text1: "Terjadi kesalahan",
         text2: error.message,
-        visibilityTime: 4000,
+
         autoHide: true,
       });
     } finally {
@@ -159,7 +159,7 @@ export default function VerifyEmail() {
           type: "error",
           text1: "Verifikasi gagal",
           text2: result.error.message,
-          visibilityTime: 4000,
+
           autoHide: true,
         });
         return;
@@ -168,7 +168,7 @@ export default function VerifyEmail() {
       Toast.show({
         type: "success",
         text1: "OTP berhasil diverifikasi!",
-        visibilityTime: 4000,
+
         autoHide: true,
       });
 
@@ -178,7 +178,7 @@ export default function VerifyEmail() {
         type: "error",
         text1: "Terjadi kesalahan",
         text2: error.message,
-        visibilityTime: 4000,
+
         autoHide: true,
       });
     } finally {

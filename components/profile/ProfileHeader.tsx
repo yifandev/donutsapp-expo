@@ -54,7 +54,7 @@ export function ProfileHeader({
       </View>
 
       {/* User Info */}
-      <View className="items-center mb-2">
+      <View className="items-center mt-2 mb-3">
         <Text
           className="text-2xl font-bold text-white mb-1 text-center"
           numberOfLines={1}

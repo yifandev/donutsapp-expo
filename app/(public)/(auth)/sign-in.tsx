@@ -85,7 +85,7 @@ export default function SignIn() {
           type: "error",
           text1: "Gagal mengirim OTP",
           text2: result.error.message || "Silakan coba lagi",
-          visibilityTime: 4000,
+
           autoHide: true,
         });
         setIsLoading(false);
@@ -96,7 +96,7 @@ export default function SignIn() {
         type: "success",
         text1: "OTP telah dikirim ke email kamu",
         text2: "Cek inbox atau folder spam ya!",
-        visibilityTime: 4000,
+
         autoHide: true,
       });
       router.push({
@@ -111,7 +111,7 @@ export default function SignIn() {
         type: "error",
         text1: "Terjadi kesalahan",
         text2: "Silakan coba lagi nanti",
-        visibilityTime: 4000,
+
         autoHide: true,
       });
     } finally {
@@ -136,7 +136,7 @@ export default function SignIn() {
         type: "error",
         text1: "Login gagal",
         text2: "Coba lagi dengan provider lain",
-        visibilityTime: 4000,
+
         autoHide: true,
       });
     }
