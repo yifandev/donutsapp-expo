@@ -20,15 +20,30 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get authenticated session
+    // Debug headers
+    console.log("API Headers:", {
+      cookie: request.headers.get("cookie"),
+      origin: request.headers.get("origin"),
+    });
+
+    // Get authenticated session dengan Better Auth
+    // SESUAI DOCS: auth.api.getSession menerima cookies dari headers
     const session = await auth.api.getSession({
-      headers: request.headers,
+      headers: {
+        cookie: request.headers.get("cookie") || "",
+      },
+    });
+
+    console.log("Session in API:", {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
     });
 
     if (!session?.user?.id) {
       return Response.json(
         {
-          error: "Unauthorized",
+          error: "Unauthorized - Please sign in to save locations",
           success: false,
         },
         { status: 401 }
@@ -92,15 +107,29 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    // Get authenticated session
+    // Debug headers untuk GET request
+    console.log("GET API Headers:", {
+      cookie: request.headers.get("cookie"),
+      origin: request.headers.get("origin"),
+    });
+
+    // Get authenticated session dengan cookies dari headers
     const session = await auth.api.getSession({
-      headers: request.headers,
+      headers: {
+        cookie: request.headers.get("cookie") || "",
+      },
+    });
+
+    console.log("GET Session in API:", {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
     });
 
     if (!session?.user?.id) {
       return Response.json(
         {
-          error: "Unauthorized",
+          error: "Unauthorized - Please sign in to view locations",
           success: false,
         },
         { status: 401 }
@@ -132,6 +161,101 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     console.error("Error fetching locations:", error);
+    return Response.json(
+      {
+        success: false,
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// Tambahkan setelah fungsi GET
+
+export async function DELETE(request: Request) {
+  try {
+    // Get authenticated session
+    const session = await auth.api.getSession({
+      headers: {
+        cookie: request.headers.get("cookie") || "",
+      },
+    });
+
+    if (!session?.user?.id) {
+      return Response.json(
+        {
+          error: "Unauthorized",
+          success: false,
+        },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const locationId = searchParams.get("id");
+
+    if (!locationId) {
+      return Response.json(
+        {
+          error: "Location ID is required",
+          success: false,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check if location belongs to user
+    const location = await prisma.location.findFirst({
+      where: {
+        id: locationId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!location) {
+      return Response.json(
+        {
+          error: "Location not found or unauthorized",
+          success: false,
+        },
+        { status: 404 }
+      );
+    }
+
+    // If deleting default location, set another as default
+    if (location.isDefault) {
+      const nextLocation = await prisma.location.findFirst({
+        where: {
+          userId: session.user.id,
+          NOT: { id: locationId },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (nextLocation) {
+        await prisma.location.update({
+          where: { id: nextLocation.id },
+          data: { isDefault: true },
+        });
+      }
+    }
+
+    // Delete the location
+    await prisma.location.delete({
+      where: { id: locationId },
+    });
+
+    return Response.json(
+      {
+        success: true,
+        message: "Location deleted successfully",
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting location:", error);
     return Response.json(
       {
         success: false,

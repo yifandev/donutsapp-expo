@@ -16,6 +16,10 @@ export default function Layout() {
           name="(stack)/edit-profile"
           options={{ animation: "slide_from_right" }}
         />
+        <Stack.Screen
+          name="(stack)/address-list"
+          options={{ animation: "slide_from_right" }}
+        />
       </Stack>
     </>
   );

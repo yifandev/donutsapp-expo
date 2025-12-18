@@ -214,7 +214,7 @@ export default function ProfileScreen() {
             icon="location-outline"
             title="Lokasi Saya"
             subtitle="Kelola alamat pengiriman"
-            onPress={() => router.push("/user/locations")}
+            onPress={() => router.push("/user/address-list")}
           />
           <View className="h-px bg-gray-100 ml-16" />
           <ProfileMenuItem

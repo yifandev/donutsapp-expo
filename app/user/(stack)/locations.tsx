@@ -177,8 +177,8 @@ export default function LocationsScreen() {
   }, [session?.user?.id]);
 
   /* =======================
-     SAVE LOCATION - FIXED
-  ======================= */
+   SAVE LOCATION - SESUAI DOCS BETTER AUTH EXPO
+======================= */
   const handleSaveLocation = async () => {
     if (!currentLocation || !address.trim()) {
       Toast.show({
@@ -192,6 +192,13 @@ export default function LocationsScreen() {
     try {
       setSaveLoading(true);
 
+      // SESUAI DOCS BETTER AUTH: Ambil cookies dari authClient
+      const cookies = authClient.getCookie();
+
+      if (!cookies) {
+        throw new Error("No session found. Please sign in again.");
+      }
+
       const payload: LocationData = {
         address: address.trim(),
         latitude: currentLocation.coords.latitude,
@@ -200,26 +207,28 @@ export default function LocationsScreen() {
         isDefault,
       };
 
-      // Gunakan authClient untuk mendapatkan token dengan benar
-      const token = session?.session?.token || session?.session;
-
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
-
+      // SESUAI DOCS BETTER AUTH: Gunakan cookies di headers
       const response = await fetch("/api/locations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          // Kirim cookies sesuai dokumentasi Better Auth
+          Cookie: cookies,
         },
+        credentials: "omit", // Penting: gunakan 'omit' karena cookies sudah dikirim manual
         body: JSON.stringify(payload),
       });
 
       const result: LocationResponse = await response.json();
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || "Failed to save location");
+      if (!response.ok) {
+        throw new Error(
+          result.error || `Failed to save location: ${response.status}`
+        );
+      }
+
+      if (!result.success) {
+        throw new Error(result.message || "Failed to save location");
       }
 
       Toast.show({

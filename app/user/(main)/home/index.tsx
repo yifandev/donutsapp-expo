@@ -11,7 +11,7 @@ export default function HomeScreen() {
   const HandleLocation = () => {
     // Navigate to menu or search
     console.log("Order prompt pressed");
-    router.push("/user/locations");
+    router.push("/user/address-list");
   };
   return (
     <View className="flex-1 bg-gray-50">
