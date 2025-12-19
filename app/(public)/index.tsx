@@ -1,4 +1,4 @@
-import PrimaryButton from "@/components/auth/PrimaryButton";
+import PrimaryButton from "@/components/PrimaryButton";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";

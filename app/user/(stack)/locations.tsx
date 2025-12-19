@@ -1,8 +1,9 @@
+import { useLocations } from "@/hooks/useLocations";
 import { authClient } from "@/lib/auth-client";
+import { Location } from "@/utils/address-helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -29,14 +30,6 @@ type MapMarker = {
   subtitle?: string;
 };
 
-interface LocationData {
-  address: string;
-  latitude: number;
-  longitude: number;
-  label: string;
-  isDefault: boolean;
-}
-
 interface LocationObjectType {
   coords: {
     latitude: number;
@@ -50,16 +43,11 @@ interface LocationObjectType {
   timestamp: number;
 }
 
-interface LocationResponse {
-  success: boolean;
-  message?: string;
-  data?: any;
-  error?: string;
-}
-
 export default function LocationsScreen() {
   const { data: session } = authClient.useSession();
   const router = useRouter();
+  const { addLocation } = useLocations();
+
   const mapRef = useRef<any>(null);
   const [mapModules, setMapModules] = useState<{
     AppleMaps?: any;
@@ -177,8 +165,8 @@ export default function LocationsScreen() {
   }, [session?.user?.id]);
 
   /* =======================
-   SAVE LOCATION - SESUAI DOCS BETTER AUTH EXPO
-======================= */
+     SAVE LOCATION
+  ======================= */
   const handleSaveLocation = async () => {
     if (!currentLocation || !address.trim()) {
       Toast.show({
@@ -192,14 +180,7 @@ export default function LocationsScreen() {
     try {
       setSaveLoading(true);
 
-      // SESUAI DOCS BETTER AUTH: Ambil cookies dari authClient
-      const cookies = authClient.getCookie();
-
-      if (!cookies) {
-        throw new Error("No session found. Please sign in again.");
-      }
-
-      const payload: LocationData = {
+      const locationData: Omit<Location, "id" | "createdAt"> = {
         address: address.trim(),
         latitude: currentLocation.coords.latitude,
         longitude: currentLocation.coords.longitude,
@@ -207,45 +188,14 @@ export default function LocationsScreen() {
         isDefault,
       };
 
-      // SESUAI DOCS BETTER AUTH: Gunakan cookies di headers
-      const response = await fetch("/api/locations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Kirim cookies sesuai dokumentasi Better Auth
-          Cookie: cookies,
-        },
-        credentials: "omit", // Penting: gunakan 'omit' karena cookies sudah dikirim manual
-        body: JSON.stringify(payload),
-      });
-
-      const result: LocationResponse = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result.error || `Failed to save location: ${response.status}`
-        );
-      }
-
-      if (!result.success) {
-        throw new Error(result.message || "Failed to save location");
-      }
-
-      Toast.show({
-        type: "success",
-        text1: "Location Saved",
-        text2: result.message || "Your location has been saved successfully",
-      });
+      // Gunakan hook useLocations untuk menyimpan
+      await addLocation(locationData);
 
       // Navigate back after successful save
       setTimeout(() => router.back(), 1500);
     } catch (error: any) {
       console.error("Save location error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Save Failed",
-        text2: error.message || "Could not save location. Please try again.",
-      });
+      // Error handling sudah dilakukan di hook useLocations
     } finally {
       setSaveLoading(false);
     }

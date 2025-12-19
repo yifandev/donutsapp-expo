@@ -3,9 +3,22 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 interface OrderPromptProps {
   onPress?: () => void;
+  currentLocation?: {
+    label: string;
+    address: string;
+  } | null;
 }
 
-export default function OrderPrompt({ onPress }: OrderPromptProps) {
+export default function OrderPrompt({
+  onPress,
+  currentLocation,
+}: OrderPromptProps) {
+  // Data default jika tidak ada currentLocation
+  const locationData = currentLocation || {
+    label: "Set location",
+    address: "Tap to select delivery address",
+  };
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -20,15 +33,14 @@ export default function OrderPrompt({ onPress }: OrderPromptProps) {
           </View>
 
           <View className="flex-1">
-            <Text className="text-primary font-semibold text-sm">
-              What would you like to order today?
-            </Text>
             <View className="flex-row items-center mt-1">
-              <Ionicons name="location-outline" size={14} color="#C25322" />
-              <Text className="text-gray-600 text-xs ml-1">
-                Delivery to Home • 20-30 min
+              <Text className="text-gray-600 text-xs ">
+                Delivery to {locationData.label}
               </Text>
             </View>
+            <Text className="text-gray-500 text-xs mt-1">
+              {locationData.address}
+            </Text>
           </View>
         </View>
 

@@ -1,5 +1,5 @@
 import OtpInput from "@/components/auth/OtpInput";
-import PrimaryButton from "@/components/auth/PrimaryButton";
+import PrimaryButton from "@/components/PrimaryButton";
 import { authClient } from "@/lib/auth-client";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";

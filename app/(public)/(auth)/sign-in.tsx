@@ -1,6 +1,6 @@
 import EmailInput from "@/components/auth/EmailInput";
-import PrimaryButton from "@/components/auth/PrimaryButton";
 import SocialButton from "@/components/auth/SocialButton";
+import PrimaryButton from "@/components/PrimaryButton";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "expo-router";
 import { useState } from "react";

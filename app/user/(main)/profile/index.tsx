@@ -179,7 +179,6 @@ export default function ProfileScreen() {
         {/* Profile Stats */}
         <ProfileStats
           ordersCount={0}
-          locationsCount={0}
           memberSince={user.createdAt.toISOString()}
         />
 

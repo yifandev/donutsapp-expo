@@ -1,4 +1,3 @@
-// hooks/useLocations.ts
 import { locationApi } from "@/services/address-api";
 import { Location } from "@/utils/address-helpers";
 import { useCallback, useState } from "react";
@@ -91,7 +90,6 @@ export const useLocations = () => {
     setSelectedId,
     fetchLocations,
     addLocation,
-
     deleteLocation,
   };
 };

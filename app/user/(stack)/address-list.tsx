@@ -1,12 +1,15 @@
+import { useLocations } from "@/hooks/useLocations";
 import { authClient } from "@/lib/auth-client";
+import { Location } from "@/utils/address-helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -18,76 +21,21 @@ import Toast from "react-native-toast-message";
 /* =======================
    TYPES
 ======================= */
-interface Location {
-  id: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  label: string;
-  isDefault: boolean;
-  createdAt: string;
-}
-
-interface LocationsResponse {
-  success: boolean;
-  data?: Location[];
-  error?: string;
-}
+// Anda bisa menghapus interface Location jika sudah ada di address-helpers
 
 export default function AddressListScreen() {
   const { data: session } = authClient.useSession();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-
-  /* =======================
-     FETCH LOCATIONS
-  ======================= */
-  const fetchLocations = async (isRefreshing = false) => {
-    try {
-      setLoading(true);
-
-      // Get cookies from auth client
-      const cookies = authClient.getCookie();
-
-      if (!cookies) {
-        throw new Error("No session found. Please sign in again.");
-      }
-
-      const response = await fetch("/api/locations", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: cookies,
-        },
-        credentials: "omit",
-      });
-
-      const result: LocationsResponse = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result.error || `Failed to fetch locations: ${response.status}`
-        );
-      }
-
-      if (!result.success) {
-        throw new Error("Failed to fetch locations");
-      }
-
-      setLocations(result.data || []);
-    } catch (error: any) {
-      console.error("Fetch locations error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Failed to Load",
-        text2: error.message || "Could not load your saved locations.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    locations,
+    loading,
+    refreshing,
+    selectedId,
+    setSelectedId,
+    fetchLocations,
+    addLocation,
+    deleteLocation,
+  } = useLocations();
 
   /* =======================
      INITIAL LOAD
@@ -109,29 +57,32 @@ export default function AddressListScreen() {
   };
 
   const handleSelectLocation = (locationId: string) => {
-    setSelectedLocation(locationId);
+    setSelectedId(locationId);
   };
 
   const handleUseLocation = (location: Location) => {
     Alert.alert(
-      "Use This Location?",
-      `Do you want to use "${location.label}" as your pickup location?`,
+      "Gunakan Lokasi Ini?",
+      `Apakah kamu ingin menggunakan "${location.label}" sebagai lokasi penjemputan Anda?`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: "Batal", style: "cancel" },
         {
-          text: "Use Location",
+          text: "gunakan Lokasi",
           style: "default",
           onPress: () => {
-            // Here you can pass the location back to previous screen
-            // For now, just show a success message
             Toast.show({
               type: "success",
-              text1: "Location Selected",
-              text2: `${location.label} has been selected as your pickup location.`,
+              text1: "Lokasi Dipilih",
+              text2: `${location.label} telah dipilih sebagai lokasi penjemputan Anda.`,
             });
 
-            // Navigate back with the selected location
-            // router.back({ params: { selectedLocation: location } });
+            // Anda bisa menambahkan logika untuk mengirim location kembali ke screen sebelumnya
+            router.replace({
+              pathname: "/user/home",
+              params: {
+                selectedLocation: JSON.stringify(location),
+              },
+            });
           },
         },
       ]
@@ -143,11 +94,23 @@ export default function AddressListScreen() {
   };
 
   const handleEditLocation = (location: Location) => {
-    // Navigate to edit screen or show edit modal
+    Alert.alert("Edit Lokasi", "Fungsi pengeditan akan segera diterapkan.", [
+      { text: "OK", style: "default" },
+    ]);
+  };
+
+  const handleDeleteLocation = (location: Location) => {
     Alert.alert(
-      "Edit Location",
-      "Edit functionality will be implemented soon.",
-      [{ text: "OK", style: "default" }]
+      "Hapus Lokasi",
+      `Apakah kamu yakin ingin menghapus "${location.label}"?`,
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Hapus",
+          style: "destructive",
+          onPress: () => deleteLocation(location.id),
+        },
+      ]
     );
   };
 
@@ -185,7 +148,6 @@ export default function AddressListScreen() {
             <View className="w-20 h-20 items-center justify-center rounded-2xl mb-6">
               <ActivityIndicator size="large" color="#6D2F13" />
             </View>
-
             <Text className="text-accent text-center">
               Memuat lokasi Anda...
             </Text>
@@ -270,7 +232,7 @@ export default function AddressListScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       >
-        <View className="px-6 pt-6 mt-6 ">
+        <View className="px-6 pt-6 mt-6">
           <View className="flex-row items-center justify-between mb-4">
             <TouchableOpacity
               onPress={() => router.back()}
@@ -280,11 +242,9 @@ export default function AddressListScreen() {
             </TouchableOpacity>
 
             <View className="items-center flex-1 px-4">
-              <Text className="text-2xl font-bold text-white">
-                My Locations
-              </Text>
+              <Text className="text-2xl font-bold text-white">Lokasi Saya</Text>
               <Text className="text-white text-sm mt-1">
-                {locations.length} saved location
+                {locations.length} lokasi tersimpan
                 {locations.length !== 1 ? "s" : ""}
               </Text>
             </View>
@@ -300,11 +260,19 @@ export default function AddressListScreen() {
       </LinearGradient>
 
       {/* Locations List */}
-      <View className="flex-1 bg-gray-50 px-4">
+      <View className="flex-1 bg-gray-50 px-4 mt-2">
         <ScrollView
           className="flex-1"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={["#6D2F13"]}
+              tintColor="#6D2F13"
+            />
+          }
         >
           {locations.map((location) => (
             <TouchableOpacity
@@ -312,7 +280,7 @@ export default function AddressListScreen() {
               onPress={() => handleSelectLocation(location.id)}
               onLongPress={() => handleEditLocation(location)}
               className={`bg-white rounded-2xl p-4 mb-4 shadow-medium border-2 ${
-                selectedLocation === location.id
+                selectedId === location.id
                   ? "border-primary"
                   : "border-transparent"
               } ${location.isDefault ? "border-l-4 border-l-green-500" : ""}`}
@@ -347,7 +315,7 @@ export default function AddressListScreen() {
                       )}
                     </View>
                     <Text className="text-accent text-sm">
-                      Added {formatDate(location.createdAt)}
+                      Ditambahkan {formatDate(location.createdAt)}
                     </Text>
                   </View>
                 </View>
@@ -366,7 +334,7 @@ export default function AddressListScreen() {
 
               {/* Address */}
               <View className="mb-4">
-                <Text className="text-accent text-sm mb-1">Address</Text>
+                <Text className="text-accent text-sm mb-1">Alamat</Text>
                 <Text className="text-primary text-base leading-6">
                   {location.address}
                 </Text>
@@ -395,13 +363,19 @@ export default function AddressListScreen() {
                 >
                   <Ionicons name="checkmark-circle" size={20} color="#EDECE3" />
                   <Text className="text-white font-semibold ml-2">
-                    Use This Location
+                    Gunakan Lokasi Ini
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
+                  onPress={() => handleDeleteLocation(location)}
+                  className="w-12 items-center justify-center bg-red-100 rounded-xl"
+                >
+                  <Ionicons name="trash" size={20} color="#EF4444" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
                   onPress={() => {
-                    // Navigate to map view
                     Alert.alert(
                       "View on Map",
                       "Map view will be implemented soon.",
