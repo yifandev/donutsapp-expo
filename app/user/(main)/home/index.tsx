@@ -11,7 +11,7 @@ import { Text, View } from "react-native";
 export default function HomeScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { locations, fetchLocations, loading } = useLocations();
+  const { locations, fetchLocations } = useLocations();
 
   // State untuk menyimpan lokasi yang dipilih
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -22,7 +22,7 @@ export default function HomeScreen() {
   // Fetch locations saat komponen mount
   useEffect(() => {
     fetchLocations();
-  }, []);
+  }, [fetchLocations]);
 
   // Handle parameter dari address-list
   useEffect(() => {

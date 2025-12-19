@@ -10,7 +10,7 @@ interface ProfileStatsProps {
 
 export function ProfileStats({ ordersCount, memberSince }: ProfileStatsProps) {
   const { data: session } = authClient.useSession();
-  const { locations, loading, fetchLocations } = useLocations();
+  const { locations, fetchLocations } = useLocations();
 
   const [isLoadingLocations, setIsLoadingLocations] = React.useState(false);
 

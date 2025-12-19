@@ -59,7 +59,7 @@ export default function EditProfileModal() {
       }
       setInitialLoading(false);
     }
-  }, [user]);
+  }, [user, setImageHook]);
 
   const handleSave = async () => {
     if (!name.trim()) {

@@ -43,8 +43,8 @@ export const useLocations = () => {
 
         Toast.show({
           type: "success",
-          text1: "Location Saved",
-          text2: "Your location has been saved successfully",
+          text1: "Lokasi Tersimpan",
+          text2: "Lokasi Anda telah berhasil disimpan",
         });
 
         return newLocation;
@@ -69,8 +69,8 @@ export const useLocations = () => {
 
       Toast.show({
         type: "success",
-        text1: "Location Deleted",
-        text2: "Your location has been deleted successfully",
+        text1: "Lokasi Dihapus",
+        text2: "Lokasi Anda telah berhasil dihapus",
       });
     } catch (error: any) {
       Toast.show({

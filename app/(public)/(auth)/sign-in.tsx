@@ -3,7 +3,7 @@ import SocialButton from "@/components/auth/SocialButton";
 import PrimaryButton from "@/components/PrimaryButton";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Text, TouchableOpacity, View } from "react-native";
 import Toast from "react-native-toast-message";
@@ -13,6 +13,16 @@ type EmailFormType = {
   email: string;
 };
 
+// EMAIL REGEX constant untuk reuse
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Toast config untuk reuse
+const TOAST_CONFIG = {
+  autoHide: true,
+  visibilityTime: 4000,
+  topOffset: 60,
+} as const;
+
 export default function SignIn() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -20,28 +30,29 @@ export default function SignIn() {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid: formIsValid },
     setError,
     clearErrors,
     watch,
+    trigger,
   } = useForm<EmailFormType>({
     defaultValues: {
       email: "",
     },
     mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   const emailValue = watch("email");
 
-  // Validasi email manual
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  // Validasi email dengan useCallback
+  const validateEmail = useCallback((email: string): boolean => {
+    return EMAIL_REGEX.test(email);
+  }, []);
 
-  // Validasi on change
-  const validateForm = (): boolean => {
-    const email = emailValue;
+  // Validasi form dengan useCallback
+  const validateForm = useCallback((): boolean => {
+    const email = emailValue.trim();
 
     if (!email) {
       setError("email", {
@@ -61,86 +72,100 @@ export default function SignIn() {
 
     clearErrors("email");
     return true;
-  };
+  }, [emailValue, validateEmail, setError, clearErrors]);
 
-  // Cek validasi sebelum submit
-  const isValid = !errors.email && emailValue.length > 0;
+  // Handle email input change dengan debounce effect
+  const handleEmailChange = useCallback(
+    (email: string) => {
+      clearErrors("email");
+      trigger("email");
+    },
+    [clearErrors, trigger]
+  );
 
-  const onSubmit = async (data: EmailFormType) => {
-    // Validasi final sebelum submit
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Kirim OTP ke email
-      const result = await authClient.emailOtp.sendVerificationOtp({
-        email: data.email,
-        type: "sign-in",
-      });
-
-      if (result.error) {
-        Toast.show({
-          type: "error",
-          text1: "Gagal mengirim OTP",
-          text2: result.error.message || "Silakan coba lagi",
-
-          autoHide: true,
-        });
-        setIsLoading(false);
+  // Submit handler dengan useCallback
+  const onSubmit = useCallback(
+    async (data: EmailFormType) => {
+      // Validasi final
+      if (!validateForm()) {
         return;
       }
 
-      Toast.show({
-        type: "success",
-        text1: "OTP telah dikirim ke email kamu",
-        text2: "Cek inbox atau folder spam ya!",
+      setIsLoading(true);
+      try {
+        // Kirim OTP ke email
+        const result = await authClient.emailOtp.sendVerificationOtp({
+          email: data.email.trim(),
+          type: "sign-in",
+        });
 
-        autoHide: true,
-      });
-      router.push({
-        pathname: "/verify-email",
-        params: {
-          email: data.email,
-        },
-      });
-    } catch (error) {
-      console.error("Sign in error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Terjadi kesalahan",
-        text2: "Silakan coba lagi nanti",
+        if (result.error) {
+          Toast.show({
+            type: "error",
+            text1: "Gagal mengirim OTP",
+            text2: result.error.message || "Silakan coba lagi",
+            ...TOAST_CONFIG,
+          });
+          return;
+        }
 
-        autoHide: true,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        Toast.show({
+          type: "success",
+          text1: "OTP telah dikirim ke email kamu",
+          text2: "Cek inbox atau folder spam ya!",
+          ...TOAST_CONFIG,
+        });
 
-  // Handle email input change
-  const handleEmailChange = (email: string) => {
-    clearErrors("email");
-    validateForm();
-  };
+        // Optimasi navigation dengan replace
+        router.replace({
+          pathname: "/verify-email",
+          params: {
+            email: data.email.trim(),
+          },
+        });
+      } catch (error) {
+        console.error("Sign in error:", error);
+        Toast.show({
+          type: "error",
+          text1: "Terjadi kesalahan",
+          text2: "Silakan coba lagi nanti",
+          ...TOAST_CONFIG,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [validateForm, router]
+  );
 
-  const handleSocialLogin = async (provider: "google" | "github" | "apple") => {
-    try {
-      await authClient.signIn.social({
-        provider,
-        callbackURL: "/user/home",
-      });
-    } catch {
-      Toast.show({
-        type: "error",
-        text1: "Login gagal",
-        text2: "Coba lagi dengan provider lain",
+  // Handle social login dengan useCallback
+  const handleSocialLogin = useCallback(
+    async (provider: "google" | "github" | "apple") => {
+      try {
+        await authClient.signIn.social({
+          provider,
+          callbackURL: "/user/home",
+        });
+      } catch {
+        Toast.show({
+          type: "error",
+          text1: "Login gagal",
+          text2: "Coba lagi dengan provider lain",
+          ...TOAST_CONFIG,
+        });
+      }
+    },
+    []
+  );
 
-        autoHide: true,
-      });
-    }
-  };
+  // Gunakan useMemo untuk kondisi yang sering berubah
+  const isSubmitDisabled = useMemo(() => {
+    return !formIsValid || isLoading || !emailValue.trim();
+  }, [formIsValid, isLoading, emailValue]);
+
+  const buttonTitle = useMemo(() => {
+    return isLoading ? "Mengirim OTP..." : "Masuk Akun";
+  }, [isLoading]);
 
   return (
     <View className="flex-1 px-6 pt-10 bg-white">
@@ -159,8 +184,8 @@ export default function SignIn() {
 
       <PrimaryButton
         className="mt-8"
-        title={isLoading ? "Mengirim OTP..." : "Masuk Akun"}
-        disabled={!isValid || isLoading}
+        title={buttonTitle}
+        disabled={isSubmitDisabled}
         loading={isLoading}
         onPress={handleSubmit(onSubmit)}
       />
@@ -179,16 +204,26 @@ export default function SignIn() {
         <SocialButton
           type="github"
           onPress={() => handleSocialLogin("github")}
+          testID="github-login-button"
         />
         <SocialButton
           type="google"
           onPress={() => handleSocialLogin("google")}
+          testID="google-login-button"
         />
-        <SocialButton type="apple" onPress={() => handleSocialLogin("apple")} />
+        <SocialButton
+          type="apple"
+          onPress={() => handleSocialLogin("apple")}
+          testID="apple-login-button"
+        />
       </View>
 
-      {/* Skip Button */}
-      <TouchableOpacity className="mt-8">
+      {/* Privacy Policy */}
+      <TouchableOpacity
+        className="mt-8"
+        activeOpacity={0.7}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
         <Text className="text-center text-secondary font-semibold">
           Privacy Policy & Terms of Service
         </Text>

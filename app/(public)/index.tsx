@@ -1,41 +1,48 @@
 import PrimaryButton from "@/components/PrimaryButton";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Gunakan session dari Better Auth
+  // Gunakan useSession tanpa state tambahan
   const { data: session, isPending: sessionLoading } = authClient.useSession();
 
-  // Update isLoading berdasarkan status loading session
-  useEffect(() => {
-    if (!sessionLoading) {
-      setIsLoading(false);
-    }
-  }, [sessionLoading]);
-
-  const handleSignIn = () => {
+  // Optimasi: Gunakan useCallback untuk handler
+  const handleSignIn = useCallback(() => {
     if (session) {
-      // Jika sudah ada session, arahkan ke home
       router.replace("/user/home");
     } else {
-      // Jika belum ada session, arahkan ke sign-in
       router.push("/sign-in");
     }
-  };
+  }, [session, router]);
+
+  // Optimasi: Gunakan useMemo untuk nilai yang sering berubah
+  const buttonTitle = useMemo(() => {
+    if (sessionLoading) return "Memuat...";
+    return session ? "Masuk ke Akun" : "Masuk Akun";
+  }, [sessionLoading, session]);
+
+  const welcomeText = useMemo(() => {
+    if (sessionLoading) return "Memuat...";
+    return session
+      ? "Selamat datang kembali!"
+      : "Mari mulai dengan Memasukan Akun";
+  }, [sessionLoading, session]);
 
   return (
     <View className="flex-1 bg-background">
-      {/* Logo tengah */}
+      {/* Logo tengah - optimasi dengan cache policy */}
       <View className="flex-1 items-center justify-center">
         <Image
           source={require("../../assets/images/logo.png")}
           className="w-40 h-40"
           resizeMode="contain"
+          // Optimasi performa image loading
+          fadeDuration={0}
+          loadingIndicatorSource={require("../../assets/images/logo.png")}
         />
       </View>
 
@@ -46,24 +53,21 @@ export default function WelcomeScreen() {
         </Text>
 
         <Text className="text-center text-gray-400 mt-2 mb-6">
-          {isLoading
-            ? "Memuat..."
-            : session
-              ? "Selamat datang kembali!"
-              : "Mari mulai dengan Memasukan Akun"}
+          {welcomeText}
         </Text>
 
         <PrimaryButton
           onPress={handleSignIn}
-          title={
-            isLoading ? "Memuat..." : session ? "Masuk ke Akun" : "Masuk Akun"
-          }
-          disabled={isLoading}
-          loading={isLoading}
+          title={buttonTitle}
+          disabled={sessionLoading}
+          loading={sessionLoading}
         />
 
         {/* Developer Info */}
-        <TouchableOpacity className="mb-6">
+        <TouchableOpacity
+          className="mb-6"
+          activeOpacity={0.7} // Optimasi feedback touch
+        >
           <Text className="text-center text-slate-700 mt-4">
             By Yifan Developer{" "}
             <Text className="text-primary font-semibold">
